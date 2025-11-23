@@ -898,7 +898,7 @@ def detect_defect_pins(pins, img, angle):
                 if dw > height_rel_thresh or dh > width_rel_thresh:
                     outlier_ids.add((p["side"], p["local_idx"]))
 
-    print("Found outlier pins are (side, idx):", sorted(outlier_ids))
+    print("Found defect pins are (side, idx):", sorted(outlier_ids))
 
     # Set colors of the normal pins and defect pins
     base_color = (0, 200, 0)
@@ -1023,6 +1023,7 @@ if __name__ == "__main__":
     output_img = detect_defect_pins(pins, img_for_defects, angle)
 
     cv2.imwrite(args.output, output_img)    
+
 
 
 
