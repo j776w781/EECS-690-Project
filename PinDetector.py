@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import os
 import argparse
-import os
 
 # This function it produces a stable, noise-reduced binary image that makes 
 # pin detection easier, but alone not good enough, needs more preprocessing 
@@ -1024,5 +1023,6 @@ if __name__ == "__main__":
     output_img = detect_defect_pins(pins, img_for_defects, angle)
 
     cv2.imwrite(args.output, output_img)    
+
 
 
