@@ -416,7 +416,7 @@ def detect_pins_by_scanning(binary, chip_x, chip_y, chip_w, chip_h,
     #       ||||       ||||     black region above the white area, which then also recognizes the top part as pin)
     #       ||||       ||||
     #       ||||       ||||
-    # /////////////// (-> body)
+    # ////////////////////////////// (-> body)
 
     def check_disconnected_end(get_pixel_line, coords, current_end, tolerance):
         max_extension = current_end
@@ -1024,4 +1024,5 @@ if __name__ == "__main__":
     output_img = detect_defect_pins(pins, img_for_defects, angle)
 
     cv2.imwrite(args.output, output_img)    
+
 
