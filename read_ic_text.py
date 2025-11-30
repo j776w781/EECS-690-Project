@@ -144,12 +144,19 @@ def group_text_by_line(results, y_threshold=15):
         merged_lines.append((full_text, avg_conf))
     return merged_lines
 
-def read_ic_text(image_path, output_filename):
+
+
+
+def read_ic_text(img):
+    '''
     print(f"Processing: {image_path}")
-    reader = easyocr.Reader(['en'], gpu=False, quantize=False)
     
     img = cv2.imread(image_path)
     if img is None: return
+    '''
+    reader = easyocr.Reader(['en'], gpu=False, quantize=False)
+    
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     cropped, offset = isolate_chip_body(gray)
     ox, oy = offset
@@ -185,9 +192,16 @@ def read_ic_text(image_path, output_filename):
              br = (int(br[0]) + ox, int(br[1]) + oy)
              cv2.rectangle(output_img, tl, br, (0, 255, 0), 1)
     
-    cv2.imwrite(output_filename, output_img)
-    print(f"Saved image to: {output_filename}\n")
+    #cv2.imwrite(output_filename, output_img)
+    #print(f"Saved image to: {output_filename}\n")
 
+    return output_img
+
+
+
+
+
+'''
 if __name__ == "__main__":
     # Update this path to match your folder
     image_folder = "IC marking images" 
@@ -203,3 +217,4 @@ if __name__ == "__main__":
         output_name = f"result_{base_name}"
         
         read_ic_text(img_path, output_name)
+'''

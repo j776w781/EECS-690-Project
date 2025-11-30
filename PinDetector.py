@@ -962,19 +962,10 @@ def detect_defect_pins(pins, img, angle):
     return img
 
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input')
-    parser.add_argument('output')
-    args = parser.parse_args()
-
-    if os.path.dirname(args.output):
-        os.makedirs(os.path.dirname(args.output), exist_ok=True)
-
-    img = cv2.imread(args.input, cv2.IMREAD_GRAYSCALE)
+def mark_pins(input_file):
+    img = cv2.imread(input_file, cv2.IMREAD_GRAYSCALE)
     if img is None:
-        raise FileNotFoundError(args.input)
+        raise FileNotFoundError(input_file)
     
     img1 = create_bw_image(img)
 
@@ -1019,10 +1010,11 @@ if __name__ == "__main__":
         disconnected_tolerance=15)          # The tolerance/number of pixels a disconneted pin to be recognized as the same pin along the pin
     
     
-    img_for_defects = cv2.imread(args.input)
+    img_for_defects = cv2.imread(input_file)
     output_img = detect_defect_pins(pins, img_for_defects, angle)
 
-    cv2.imwrite(args.output, output_img)    
+    #cv2.imwrite(args.output, output_img)    
+    return output_img
 
 
 
