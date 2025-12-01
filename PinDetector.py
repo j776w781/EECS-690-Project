@@ -104,7 +104,11 @@ def find_chip_with_pins_bbox(img):
 
     # Select the largest contour
     #  -> Now chip + pins assembly is the largest object
-    cnt = max(contours, key=cv2.contourArea)
+    def bbox_area(c):
+        x, y, w, h = cv2.boundingRect(c)
+        return w * h
+
+    cnt = max(contours, key=bbox_area)
 
     # Compute the smallest convex shape that encloses the contour.
     # To remove concave irregularities by gaps between pins 
@@ -197,18 +201,29 @@ def rotate_chip_to_horizontal(img, img7_fill_small_white):
     if angle < 0:
         angle = 0
 
+    # Safety precaution
+    if angle > 10:
+        H, W = img.shape[:2]
+        M = cv2.getRotationMatrix2D((W / 2, H / 2), 0, 1.0)
+        img = img7_fill_small_white
+        rotated = cv2.warpAffine(
+            img, M, (W, H),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE
+        )
+        angle = 0
+    else:
+        # Rotate the image by the normalized angle 
+        H, W = img.shape[:2]
+        M = cv2.getRotationMatrix2D((W / 2, H / 2), angle, 1.0)
+        img = img7_fill_small_white
+        rotated = cv2.warpAffine(
+            img, M, (W, H),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE
+        )
 
-    # Rotate the image by the normalized angle 
-    H, W = img.shape[:2]
-    M = cv2.getRotationMatrix2D((W / 2, H / 2), angle, 1.0)
-    img = img7_fill_small_white
-    rotated = cv2.warpAffine(
-        img, M, (W, H),
-        flags=cv2.INTER_CUBIC,
-        borderMode=cv2.BORDER_REPLICATE
-    )
-
-    # return rotated image and angle because we need this angle to rotate the pins bbox back
+        # return rotated image and angle because we need this angle to rotate the pins bbox back
     return rotated, angle
 
 # Calculate how many transitions a region is by counting how often pixel values switch between black and white
@@ -824,10 +839,10 @@ def detect_pins_by_scanning(binary, chip_x, chip_y, chip_w, chip_h,
     # This is a filter that removes all side pins if there are less than 9 pins/boxes per side
     # Because if so it is very likely that that side does not have any pin
     pins = []
-    pins.append(top_pins if len(top_pins) >= 9 else [])
-    pins.append(bottom_pins if len(bottom_pins) >= 9 else [])
-    pins.append(left_pins if len(left_pins) >= 9 else [])
-    pins.append(right_pins if len(right_pins) >= 9 else [])
+    pins.append(top_pins if len(top_pins) >= 4 else [])
+    pins.append(bottom_pins if len(bottom_pins) >= 4 else [])
+    pins.append(left_pins if len(left_pins) >= 4 else [])
+    pins.append(right_pins if len(right_pins) >= 4 else [])
 
     return pins
 
@@ -973,7 +988,7 @@ def mark_pins(input_file):
     img2_strict = make_bw(img, 243)  
     img2_loose = make_bw(img, 220)  
 
-    img3_pre = fill_largest_white(img2_strict)    
+    img3_pre = fill_largest_white(img2_strict)   
     img3 = fill_largest_white(img2_loose)   
     
     img4_1 = merge_black_regions(img2_body, img1)
@@ -982,7 +997,8 @@ def mark_pins(input_file):
     
     img_ICbbox, x, y, w, h, = find_chip_with_pins_bbox(img1)
 
-    chip_x, chip_y, chip_w, chip_h = x, y, w+10, h+10  
+    chip_x, chip_y, chip_w, chip_h = x, y, w+10, h+10
+    
     img5_clean = fill_outside_bbox(img4, chip_x, chip_y, chip_w, chip_h)
     
     img6_morph = fill_white_inside_black(img5_clean, kx=7, ky=7, iterations=1)
@@ -1007,7 +1023,7 @@ def mark_pins(input_file):
         min_box_w=35,                       # Minimum width a pin bounding box needs
         min_box_h=80,                       # Minimum height a pin bounding box needs 
         min_box_area=2000,                  # Minimum area a pin bounding box needs
-        disconnected_tolerance=15)          # The tolerance/number of pixels a disconneted pin to be recognized as the same pin along the pin
+        disconnected_tolerance=55)          # The tolerance/number of pixels a disconneted pin to be recognized as the same pin along the pin
     
     
     img_for_defects = cv2.imread(input_file)
