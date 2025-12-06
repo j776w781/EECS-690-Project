@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import os
-import argparse
 
 # This function it produces a stable, noise-reduced binary image that makes 
 # pin detection easier, but alone not good enough, needs more preprocessing 
@@ -883,6 +881,7 @@ def detect_defect_pins(pins, img, angle):
         filt_h = heights[(heights > 0.5) & (heights <= 1.5 * med_h)]
 
         mean_w = filt_w.mean() if len(filt_w) else med_w
+        
         mean_h = filt_h.mean() if len(filt_h) else med_h
 
         side_stats[side] = (mean_w, mean_h)
@@ -1009,10 +1008,11 @@ def mark_pins(input_file):
 
     chip_x, chip_y, chip_w, chip_h = compute_bbox_body(img8_aligned)
 
-    
+
     gray = img8_aligned
     _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
-    binary_for_scan = cv2.bitwise_not(binary)  
+    binary_for_scan = cv2.bitwise_not(binary)
+     
 
     pins = detect_pins_by_scanning(
         binary_for_scan,
